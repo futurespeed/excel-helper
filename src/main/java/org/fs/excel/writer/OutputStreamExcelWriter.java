@@ -9,11 +9,21 @@ public abstract class OutputStreamExcelWriter implements ExcelWriter {
 
     public static class OutputStreamExcelWriterWorkData implements WriteContext.WorkData {
 
+        private boolean writeHeader = true;
+
         private OutputStream outputStream;
 
         private RowMapper rowMapper;
 
         private List<Object> dataList;
+
+        public boolean isWriteHeader() {
+            return writeHeader;
+        }
+
+        public void setWriteHeader(boolean writeHeader) {
+            this.writeHeader = writeHeader;
+        }
 
         public OutputStream getOutputStream() {
             return outputStream;

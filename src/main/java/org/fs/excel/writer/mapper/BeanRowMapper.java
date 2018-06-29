@@ -15,10 +15,13 @@ public class BeanRowMapper<T> implements RowMapper<T> {
 
     private List<String> columnList;
 
+    private Map<String, ExcelColumn> columnAnnoMap;
+
     public BeanRowMapper(Class<T> clazz) {
         this.clazz = clazz;
         columnMap = new HashMap<String, String>();
         columnList = new ArrayList<String>();
+        columnAnnoMap = new HashMap<String, ExcelColumn>();
 
         List<Field> fieldList = new ArrayList<Field>();
         fieldList.addAll(Arrays.asList(clazz.getDeclaredFields()));
@@ -35,8 +38,10 @@ public class BeanRowMapper<T> implements RowMapper<T> {
             if (!String.class.equals(field.getType())) {
                 throw new RuntimeException("field [" + field.getName() + "] type error, only support field type [java.lang.String]");
             }
-            columnMap.put(String.valueOf(excelColumn.seq() - 1), field.getName());
-            columnList.add(String.valueOf(excelColumn.seq() - 1));
+            String columnNum = String.valueOf(excelColumn.seq() - 1);
+            columnMap.put(columnNum, field.getName());
+            columnList.add(columnNum);
+            columnAnnoMap.put(columnNum, excelColumn);
         }
     }
 
@@ -46,9 +51,27 @@ public class BeanRowMapper<T> implements RowMapper<T> {
     }
 
     @Override
+    public String getColumnName(WriteContext writeContext, long column) {
+        ExcelColumn excelColumn = columnAnnoMap.get(String.valueOf(column));
+        if(excelColumn != null){
+            return excelColumn.name();
+        }
+        return null;
+    }
+
+    @Override
+    public int getColumnWidth(WriteContext writeContext, long column) {
+        ExcelColumn excelColumn = columnAnnoMap.get(String.valueOf(column));
+        if(excelColumn != null){
+            return excelColumn.width();
+        }
+        return 30;
+    }
+
+    @Override
     public Object getValue(WriteContext writeContext, T t, long column) {
         try {
-            String property = columnMap.get(String.valueOf(column + 1));
+            String property = columnMap.get(String.valueOf(column));
             if (null == property) {
                 return null;
             }
