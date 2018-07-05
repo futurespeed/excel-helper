@@ -1,4 +1,4 @@
-package org.fs.excel.parse.mapper;
+package org.fs.excel.parse;
 
 import java.lang.annotation.*;
 

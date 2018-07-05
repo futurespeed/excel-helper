@@ -1,6 +1,6 @@
 package org.fs.excel;
 
-import org.fs.excel.parse.mapper.ExcelBean;
+import org.fs.excel.parse.ExcelBean;
 
 public class TestBean1 {
     @ExcelBean(seq = 1)

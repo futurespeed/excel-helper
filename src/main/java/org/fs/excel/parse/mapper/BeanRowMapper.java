@@ -1,6 +1,7 @@
 package org.fs.excel.parse.mapper;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.fs.excel.parse.ExcelBean;
 
 import java.lang.reflect.Field;
 import java.util.*;
