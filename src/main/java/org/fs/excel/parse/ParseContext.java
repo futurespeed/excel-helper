@@ -1,12 +1,19 @@
 package org.fs.excel.parse;
 
+import org.fs.excel.MessageProvider;
+
 import java.util.List;
 
 public class ParseContext {
+
+    public static final String RESULT_SUCCESS = "success";
+    public static final String RESULT_ERROR = "error";
+
 	private String flowNo;
 	private String createTime;
 	private String code;
 	private String result;
+	private String resultMsg;
 	private MetaData metaData;
 	private WorkData workData;
 	private ResultData resultData;
@@ -35,6 +42,14 @@ public class ParseContext {
 		this.result = result;
 	}
 
+    public String getResultMsg() {
+        return resultMsg;
+    }
+
+    public void setResultMsg(String resultMsg) {
+        this.resultMsg = resultMsg;
+    }
+
     public MetaData getMetaData() {
         return metaData;
     }
@@ -59,7 +74,9 @@ public class ParseContext {
         this.resultData = resultData;
     }
 
-    public interface MetaData{}
+    public interface MetaData{
+	    MessageProvider getMessageProvider();
+    }
 	public interface WorkData{}
 	public interface ResultData{
         List<Object> getDataList();

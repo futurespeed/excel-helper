@@ -1,7 +1,8 @@
 package org.fs.excel.parse.mapper;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.fs.excel.parse.ExcelBean;
+import org.fs.excel.ExcelColumn;
+import org.fs.excel.parse.ParseContext;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -24,16 +25,19 @@ public class BeanRowMapper<T> implements RowMapper<T> {
         }
         Collections.reverse(fieldList);
         for(Field field: fieldList){
-            ExcelBean excelBean = field.getAnnotation(ExcelBean.class);
-            if(null == excelBean){
+            ExcelColumn excelColumn = field.getAnnotation(ExcelColumn.class);
+            if(null == excelColumn){
                 continue;
             }
-            columnMap.put(String.valueOf(excelBean.seq() - 1), field.getName());
+            if(!String.class.equals(field.getType())){
+                throw new RuntimeException("field [" + field.getName() + "] type error, only support field type [java.lang.String]");
+            }
+            columnMap.put(String.valueOf(excelColumn.seq() - 1), field.getName());
         }
     }
 
     @Override
-    public T newRowItem() {
+    public T newRowItem(ParseContext parseContext) {
         try {
             return clazz.newInstance();
         }catch(Throwable e){
@@ -42,7 +46,7 @@ public class BeanRowMapper<T> implements RowMapper<T> {
     }
 
     @Override
-    public void setValue(long rowIdx, long colIdx, T t, Object value) {
+    public void setValue(ParseContext parseContext, long rowIdx, long colIdx, T t, Object value) {
         try {
             String propertyName = columnMap.get(String.valueOf(colIdx));
             if(propertyName != null) {

@@ -1,54 +1,48 @@
 package org.fs.excel.parse;
 
+import org.fs.excel.MessageProvider;
 import org.fs.excel.parse.event.ParseEvent;
 import org.fs.excel.parse.event.ParseEventHandler;
 import org.fs.excel.parse.mapper.RowMapper;
 import org.fs.excel.parse.validate.RowValidator;
 
 import java.io.InputStream;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class InputStreamExcelParser implements ExcelParser {
-
-    private InputStreamExcelMetaData getMetaData(ParseContext parseContext){
-        return (InputStreamExcelMetaData) parseContext.getMetaData();
-    }
-
-    private InputStreamExcelWorkData getWorkData(ParseContext parseContext){
-        return (InputStreamExcelWorkData) parseContext.getWorkData();
-    }
-
-    private InputStreamExcelResultData getResultData(ParseContext parseContext){
-        return (InputStreamExcelResultData) parseContext.getResultData();
-    }
 	
 	public void parse(ParseContext parseContext){
-		InputStream in = getWorkData(parseContext).getInputStream();
+	    InputStreamExcelWorkData workData = getWorkData(parseContext);
+		InputStream in = workData.getInputStream();
 		read(parseContext, in);
 		onReady(parseContext);
 		long currPage = 1L;
-        getWorkData(parseContext).setCurrentPage(currPage);
-		long pageSize = getWorkData(parseContext).getPageSize();
+        workData.setCurrentPage(currPage);
+        long maxRow = getMetaData(parseContext).getMaxRow();
+		long pageSize = workData.getPageSize();
+        long beginIdx = getMetaData(parseContext).getBeginRow();
 		long rowSize = getRowSize(parseContext);
-		long beginIdx = getMetaData(parseContext).getBeginRow();
+		if(maxRow > 0 && (rowSize - beginIdx) > maxRow){
+		    parseContext.setResult(ParseContext.RESULT_ERROR);
+		    parseContext.setResultMsg(
+		            MessageFormat.format(
+		                    parseContext.getMetaData().getMessageProvider().getProperty("excel.parse.over-max-row"), maxRow));
+        }
 		for(long i = beginIdx; i < rowSize; i++){
-            getWorkData(parseContext).setCurrentRowIdx(i);
+            workData.setCurrentRowIdx(i);
             if(!onRowRead(parseContext)){
                 break;
             }
 			if(pageSize > 0 && 0 == (i - beginIdx + 1) % pageSize){
 				onPageChange(parseContext);
 				currPage++;
-                getWorkData(parseContext).setCurrentPage(currPage);
+                workData.setCurrentPage(currPage);
 			}
 		}
 		onFinish(parseContext);
 	}
-	
-	protected abstract void read(ParseContext parseContext, InputStream in);
-	
-	protected abstract long getRowSize(ParseContext parseContext);
 
 	protected void onReady(ParseContext parseContext){
 	    InputStreamExcelMetaData metaData = getMetaData(parseContext);
@@ -65,7 +59,7 @@ public abstract class InputStreamExcelParser implements ExcelParser {
 	
 	protected void onFinish(ParseContext parseContext){
         if(null == parseContext.getResult()){
-            parseContext.setResult("success");
+            parseContext.setResult(ParseContext.RESULT_SUCCESS);
         }
 	    processEvent(parseContext, ParseEvent.FINISH);
     }
@@ -80,8 +74,6 @@ public abstract class InputStreamExcelParser implements ExcelParser {
 	    return result;
     }
 
-    protected abstract boolean rowRead(ParseContext parseContext);
-
     protected void processEvent(ParseContext parseContext, ParseEvent parseEvent){
         List<ParseEventHandler> eventHandlers = getMetaData(parseContext).getEventHandlers();
         if(null == eventHandlers || eventHandlers.isEmpty()){
@@ -89,23 +81,43 @@ public abstract class InputStreamExcelParser implements ExcelParser {
         }
         for(ParseEventHandler eventHandler : eventHandlers){
             switch(parseEvent) {
-                case READY: eventHandler.onReady(parseContext); break;
-                case ROW_READ: eventHandler.onRowRead(parseContext); break;
-                case PAGE_CHANGE: eventHandler.onPageChange(parseContext); break;
-                case FINISH: eventHandler.onFinish(parseContext); break;
-                default: break;
+                case READY: {eventHandler.onReady(parseContext); break;}
+                case ROW_READ: {eventHandler.onRowRead(parseContext); break;}
+                case PAGE_CHANGE: {eventHandler.onPageChange(parseContext); break;}
+                case FINISH: {eventHandler.onFinish(parseContext); break;}
+                default: {break;}
             }
         }
     }
 
+    private InputStreamExcelMetaData getMetaData(ParseContext parseContext){
+        return (InputStreamExcelMetaData) parseContext.getMetaData();
+    }
+
+    private InputStreamExcelWorkData getWorkData(ParseContext parseContext){
+        return (InputStreamExcelWorkData) parseContext.getWorkData();
+    }
+
+    private InputStreamExcelResultData getResultData(ParseContext parseContext){
+        return (InputStreamExcelResultData) parseContext.getResultData();
+    }
+
+    protected abstract void read(ParseContext parseContext, InputStream in);
+
+    protected abstract long getRowSize(ParseContext parseContext);
+
+    protected abstract boolean rowRead(ParseContext parseContext);
+
 	public static class InputStreamExcelMetaData implements ParseContext.MetaData {
-	    private long beginRow = 2;
+	    private long beginRow = 1;
+	    private long maxRow = -1;
         private boolean continueOnError = false;
         private long columnSize = -1;
         private long pageSize = -1;
         private RowMapper RowMapper;
         private RowValidator rowValidator;
         private List<ParseEventHandler> eventHandlers = new ArrayList<ParseEventHandler>();
+        private MessageProvider messageProvider = new MessageProvider(null);
 
         public long getBeginRow() {
             return beginRow;
@@ -113,6 +125,14 @@ public abstract class InputStreamExcelParser implements ExcelParser {
 
         public void setBeginRow(long beginRow) {
             this.beginRow = beginRow;
+        }
+
+        public long getMaxRow() {
+            return maxRow;
+        }
+
+        public void setMaxRow(long maxRow) {
+            this.maxRow = maxRow;
         }
 
         public boolean isContinueOnError() {
@@ -167,6 +187,13 @@ public abstract class InputStreamExcelParser implements ExcelParser {
             return eventHandlers;
         }
 
+        public MessageProvider getMessageProvider() {
+            return messageProvider;
+        }
+
+        public void setMessageProvider(MessageProvider messageProvider) {
+            this.messageProvider = messageProvider;
+        }
     }
 
 	public static class InputStreamExcelWorkData implements ParseContext.WorkData {

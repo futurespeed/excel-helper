@@ -1,6 +1,8 @@
 package org.fs.excel.parse.mapper;
 
+import org.fs.excel.parse.ParseContext;
+
 public interface RowMapper<T> {
-    T newRowItem();
-    void setValue(long rowIdx, long colIdx, T t, Object value);
+    T newRowItem(ParseContext parseContext);
+    void setValue(ParseContext parseContext, long rowIdx, long colIdx, T t, Object value);
 }

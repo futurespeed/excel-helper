@@ -1,6 +1,8 @@
 package org.fs.excel.parse;
 
 import java.io.InputStream;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -9,8 +11,11 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.fs.excel.MessageProvider;
 import org.fs.excel.parse.event.ParseEventHandler;
+import org.fs.excel.parse.mapper.BeanRowMapper;
 import org.fs.excel.parse.mapper.RowMapper;
+import org.fs.excel.parse.validate.BeanRowValidator;
 import org.fs.excel.parse.validate.RowValidator;
 
 public class PoiExcelParser extends InputStreamExcelParser {
@@ -69,6 +74,7 @@ public class PoiExcelParser extends InputStreamExcelParser {
 	}
 
 	protected boolean rowRead(ParseContext parseContext) {
+        boolean continueOnError = getMetaData(parseContext).isContinueOnError();
 		long rowIdx = getWorkData(parseContext).getCurrentRowIdx();
 		Sheet sheet = getWorkData(parseContext).getSheet();
 		List<Object> list = getResultData(parseContext).getDataList();
@@ -76,23 +82,28 @@ public class PoiExcelParser extends InputStreamExcelParser {
 		Row row = sheet.getRow((int) rowIdx);
 		RowMapper mapper = getMetaData(parseContext).getRowMapper();
 		RowValidator validator = getMetaData(parseContext).getRowValidator();
-		Object rowItem = mapper.newRowItem();
+		Object rowItem = mapper.newRowItem(parseContext);
         Object validateResult = null;
         for(long i = 0, len = getColumnSize(parseContext); i < len; i++){
 			Cell cell = row.getCell((int) i);
 			Object value = columnRead(cell, i);
 			if(validator != null) {
-                validateResult = validator.validateColumn(rowIdx, i, value, rowItem, validateResult);
-                break;
+                validateResult = validator.validateColumn(parseContext, rowIdx, i, value, rowItem, validateResult);
+                if(validateResult != null) {
+                    parseContext.setResult(ParseContext.RESULT_ERROR);
+                    if(!continueOnError) {
+                        break;
+                    }
+                }
             }
-            mapper.setValue(rowIdx, i, rowItem, value);
+            mapper.setValue(parseContext, rowIdx, i, rowItem, value);
 		}
         if(validator != null) {
-            validateResult = validator.validateRow(rowIdx, rowItem, validateResult);
+            validateResult = validator.validateRow(parseContext, rowIdx, rowItem, validateResult);
             if (validateResult != null) {
                 errorList.add(validateResult);
-                if (!getMetaData(parseContext).isContinueOnError()) {
-                    parseContext.setResult("error");
+                if (!continueOnError) {
+                    parseContext.setResult(ParseContext.RESULT_ERROR);
                     return false;
                 }
             }
@@ -101,22 +112,45 @@ public class PoiExcelParser extends InputStreamExcelParser {
 		return true;
 	}
 	
-	protected Object columnRead(Cell cell, long colIdx) {
-		if(null == cell){
-			return "";
-		}
-		CellType cellType = cell.getCellTypeEnum();
-		if(CellType.STRING.equals(cellType)){
-			return cell.getStringCellValue();
-		}
-		if(CellType.NUMERIC.equals(cellType)){
-			//FIXME NUMERIC
-			return String.valueOf(cell.getNumericCellValue());
-		}
-		if(CellType.BOOLEAN.equals(cellType)){
-			return cell.getBooleanCellValue() ? "1" : "0";
-		}
-		return "";
+	protected String columnRead(Cell cell, long colIdx) {
+        if (cell == null) {
+            return null;
+        }
+        String value = null;
+        switch (cell.getCellType()) {
+            case Cell.CELL_TYPE_BOOLEAN: {
+                value = String.valueOf(cell.getBooleanCellValue());
+                break;
+            }
+            case Cell.CELL_TYPE_NUMERIC: {
+                if (!org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
+                    DecimalFormat df = new DecimalFormat("#.######");
+                    value = df.format(cell.getNumericCellValue());
+                } else {
+                    java.util.Date date = org.apache.poi.ss.usermodel.DateUtil.getJavaDate((double) cell.getNumericCellValue());
+                    value = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
+                }
+                break;
+            }
+            case Cell.CELL_TYPE_STRING: {
+                value = cell.getStringCellValue().trim();
+                break;
+            }
+            case Cell.CELL_TYPE_ERROR: {
+                break;
+            }
+            case Cell.CELL_TYPE_BLANK: {
+                break;
+            }
+            case Cell.CELL_TYPE_FORMULA: {
+                value = cell.getCellFormula();
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+        return value;
 	}
 
     public static class PoiExcelParserMetaData extends InputStreamExcelMetaData{
@@ -167,6 +201,16 @@ public class PoiExcelParser extends InputStreamExcelParser {
             return this;
         }
 
+        public PoiExcelParserContextBuilder beginRow(long beginRow){
+            ((PoiExcelParserMetaData) parseContext.getMetaData()).setBeginRow(beginRow);
+            return this;
+        }
+
+        public PoiExcelParserContextBuilder maxRow(long maxRow){
+            ((PoiExcelParserMetaData) parseContext.getMetaData()).setMaxRow(maxRow);
+            return this;
+        }
+
         public PoiExcelParserContextBuilder columnSize(long columnSize){
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setColumnSize(columnSize);
             return this;
@@ -174,6 +218,12 @@ public class PoiExcelParser extends InputStreamExcelParser {
 
         public PoiExcelParserContextBuilder pageSize(long pageSize){
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setPageSize(pageSize);
+            return this;
+        }
+
+        public PoiExcelParserContextBuilder beanClass(Class<?> clazz){
+            ((PoiExcelParserMetaData) parseContext.getMetaData()).setRowMapper(new BeanRowMapper(clazz));
+            ((PoiExcelParserMetaData) parseContext.getMetaData()).setRowValidator(new BeanRowValidator(clazz));
             return this;
         }
 
@@ -199,6 +249,11 @@ public class PoiExcelParser extends InputStreamExcelParser {
 
         public PoiExcelParserContextBuilder eventHandler(ParseEventHandler parseEventHandler){
             ((PoiExcelParserMetaData) parseContext.getMetaData()).addEventHandler(parseEventHandler);
+            return this;
+        }
+
+        public PoiExcelParserContextBuilder messageProvider(MessageProvider messageProvider){
+            ((PoiExcelParserMetaData) parseContext.getMetaData()).setMessageProvider(messageProvider);
             return this;
         }
     }
