@@ -60,8 +60,7 @@ public class BeanRowValidator<T> implements RowValidator<T, RowErrorInfo> {
         for (ConstraintViolation<T> cv : set) {
             property = cv.getPropertyPath().toString();
             String msg = cv.getMessage();
-            if(cv.getMessageTemplate().startsWith("{javax.validation.")
-                    || cv.getMessageTemplate().startsWith("{org.hibernate.validator.")){
+            if(cv.getMessageTemplate().startsWith("{")){
                 msg = MessageFormat.format(parseContext.getMetaData().getMessageProvider().getProperty("excel.parse.validate.bean.default-error"), fieldNameMap.get(property));
             }
             if (rowErrorInfo.getMsg() != null) {
