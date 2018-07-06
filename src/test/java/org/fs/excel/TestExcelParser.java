@@ -24,6 +24,8 @@ public class TestExcelParser {
                     .inputStream(in)
                     .beanClass(TestBean1.class)
                     .continueOnError(true)
+                    .beginRow(2)
+                    .maxRow(5000)
 //                    .pageSize(10)
 //                    .eventHandler(new ParseEventAdapter() {
 //                        @Override
