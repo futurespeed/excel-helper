@@ -27,7 +27,7 @@ public class TestExcelWriter {
             Map map = new HashMap();
             map.put("col1", i + "");
             map.put("col2", UUID.randomUUID().toString());
-            map.put("col3", "cccdmap");
+            map.put("col3", "map1234");
             list2.add(map);
         }
 
