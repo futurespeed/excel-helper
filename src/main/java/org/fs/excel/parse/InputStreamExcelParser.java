@@ -4,6 +4,7 @@ import org.fs.excel.MessageProvider;
 import org.fs.excel.parse.event.ParseEvent;
 import org.fs.excel.parse.event.ParseEventHandler;
 import org.fs.excel.parse.mapper.RowMapper;
+import org.fs.excel.parse.mapper.SimpleRowMapper;
 import org.fs.excel.parse.validate.RowValidator;
 
 import java.io.InputStream;
@@ -128,7 +129,7 @@ public abstract class InputStreamExcelParser implements ExcelParser {
         private boolean continueOnError = false;
         private long columnSize = -1;
         private long pageSize = -1;
-        private RowMapper RowMapper;
+        private RowMapper rowMapper = new SimpleRowMapper();
         private RowValidator rowValidator;
         private List<ParseEventHandler> eventHandlers = new ArrayList<ParseEventHandler>();
         private MessageProvider messageProvider = new MessageProvider(null);
@@ -174,11 +175,11 @@ public abstract class InputStreamExcelParser implements ExcelParser {
         }
 
         public RowMapper getRowMapper() {
-            return RowMapper;
+            return rowMapper;
         }
 
         public void setRowMapper(RowMapper rowMapper) {
-            RowMapper = rowMapper;
+            this.rowMapper = rowMapper;
         }
 
         public RowValidator getRowValidator() {
