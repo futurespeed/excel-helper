@@ -7,5 +7,6 @@ import java.lang.annotation.*;
 @Documented
 public @interface ExcelColumn {
     int seq();
+
     String name();
 }

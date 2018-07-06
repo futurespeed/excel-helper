@@ -14,11 +14,11 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 public class TestExcelParser {
-	@Test
-	public void testParse() throws Throwable{
-		PoiExcelParser parser = new PoiExcelParser();
+    @Test
+    public void testParse() throws Throwable {
+        PoiExcelParser parser = new PoiExcelParser();
         InputStream in = null;
-        try{
+        try {
             in = new FileInputStream("D:/data/require/营销平台二期优化功能清单-20170705.xlsx");
             ParseContext parseContext = parser.builder()
                     .inputStream(in)
@@ -47,26 +47,26 @@ public class TestExcelParser {
             parser.parse(parseContext);
             System.out.println(parseContext.getResultData().getDataList());
             System.out.println(parseContext.getResultData().getErrorList());
-        }finally {
+        } finally {
             IOUtils.closeQuietly(in);
         }
-	}
+    }
 
     public static class TestBean1 {
         @NotNull
-        @Pattern(regexp="^[\\d]{1,32}$")
-        @ExcelColumn(seq = 1, name="c1")
+        @Pattern(regexp = "^[\\d]{1,32}$")
+        @ExcelColumn(seq = 1, name = "c1")
         private String col1;
 
         @NotNull(message = "列2不能为空")
-        @Pattern(regexp="^[\\d]{1,32}$", message = "列2格式错误")
-        @ExcelColumn(seq = 2, name="c2")
+        @Pattern(regexp = "^[\\d]{1,32}$", message = "列2格式错误")
+        @ExcelColumn(seq = 2, name = "c2")
         private String col2;
 
         @NotNull
-        @Pattern(regexp="^[\\d]{1,32}$")
+        @Pattern(regexp = "^[\\d]{1,32}$")
 //        @Spel("@bean1.check(#root)")
-        @ExcelColumn(seq = 3, name="c3")
+        @ExcelColumn(seq = 3, name = "c3")
         private String col3;
 
         public String getCol1() {

@@ -13,23 +13,23 @@ public class BeanRowMapper<T> implements RowMapper<T> {
 
     private Map<String, String> columnMap;
 
-    public BeanRowMapper(Class<T> clazz){
+    public BeanRowMapper(Class<T> clazz) {
         this.clazz = clazz;
         columnMap = new HashMap<String, String>();
 
         List<Field> fieldList = new ArrayList<Field>();
         fieldList.addAll(Arrays.asList(clazz.getDeclaredFields()));
         Class<?> superClass = clazz;
-        while((superClass = superClass.getSuperclass()) != Object.class){
+        while ((superClass = superClass.getSuperclass()) != Object.class) {
             fieldList.addAll(Arrays.asList(superClass.getDeclaredFields()));
         }
         Collections.reverse(fieldList);
-        for(Field field: fieldList){
+        for (Field field : fieldList) {
             ExcelColumn excelColumn = field.getAnnotation(ExcelColumn.class);
-            if(null == excelColumn){
+            if (null == excelColumn) {
                 continue;
             }
-            if(!String.class.equals(field.getType())){
+            if (!String.class.equals(field.getType())) {
                 throw new RuntimeException("field [" + field.getName() + "] type error, only support field type [java.lang.String]");
             }
             columnMap.put(String.valueOf(excelColumn.seq() - 1), field.getName());
@@ -40,7 +40,7 @@ public class BeanRowMapper<T> implements RowMapper<T> {
     public T newRowItem(ParseContext parseContext) {
         try {
             return clazz.newInstance();
-        }catch(Throwable e){
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }
@@ -49,10 +49,10 @@ public class BeanRowMapper<T> implements RowMapper<T> {
     public void setValue(ParseContext parseContext, long rowIdx, long colIdx, T t, Object value) {
         try {
             String propertyName = columnMap.get(String.valueOf(colIdx));
-            if(propertyName != null) {
+            if (propertyName != null) {
                 PropertyUtils.setProperty(t, propertyName, value);
             }
-        }catch(Throwable e){
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }

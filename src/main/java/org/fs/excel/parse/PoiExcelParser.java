@@ -20,85 +20,85 @@ import org.fs.excel.parse.validate.RowValidator;
 
 public class PoiExcelParser extends InputStreamExcelParser {
 
-    public PoiExcelParserContextBuilder builder(){
+    public PoiExcelParserContextBuilder builder() {
         return PoiExcelParserContextBuilder.build();
     }
 
-    protected PoiExcelParserMetaData getMetaData(ParseContext parseContext){
+    protected PoiExcelParserMetaData getMetaData(ParseContext parseContext) {
         return (PoiExcelParserMetaData) parseContext.getMetaData();
     }
 
-    protected PoiExcelParserWorkData getWorkData(ParseContext parseContext){
+    protected PoiExcelParserWorkData getWorkData(ParseContext parseContext) {
         return (PoiExcelParserWorkData) parseContext.getWorkData();
     }
 
-    public PoiExcelParserResultData getResultData(ParseContext parseContext){
+    public PoiExcelParserResultData getResultData(ParseContext parseContext) {
         return (PoiExcelParserResultData) parseContext.getResultData();
     }
-	
-	protected void read(ParseContext parseContext, InputStream in) {
-		try{
-			Workbook wb = WorkbookFactory.create(in);
-			Sheet sheet = wb.getSheetAt(getMetaData(parseContext).getSheetIdx());
+
+    protected void read(ParseContext parseContext, InputStream in) {
+        try {
+            Workbook wb = WorkbookFactory.create(in);
+            Sheet sheet = wb.getSheetAt(getMetaData(parseContext).getSheetIdx());
             getWorkData(parseContext).setSheet(sheet);
-		}catch(Throwable e){
-			throw new RuntimeException(e);
-		}
-	}
-	
-	protected long getRowSize(ParseContext parseContext) {
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected long getRowSize(ParseContext parseContext) {
         Sheet sheet = getWorkData(parseContext).getSheet();
         Long rowSize = (long) sheet.getLastRowNum();
-        if(rowSize >= 0){
+        if (rowSize >= 0) {
             rowSize++;
         }
         getWorkData(parseContext).setRowSize(rowSize);
-		return rowSize;
-	}
-	
-	protected long getColumnSize(ParseContext parseContext){
-		long columnSize = getWorkData(parseContext).getColumnSize();
-		if(columnSize > 0){
-		    return columnSize;
+        return rowSize;
+    }
+
+    protected long getColumnSize(ParseContext parseContext) {
+        long columnSize = getWorkData(parseContext).getColumnSize();
+        if (columnSize > 0) {
+            return columnSize;
         }
         columnSize = getMetaData(parseContext).getColumnSize();
-        if(columnSize > 0){
+        if (columnSize > 0) {
             getWorkData(parseContext).setColumnSize(columnSize);
             return columnSize;
         }
-		Sheet sheet = getWorkData(parseContext).getSheet();
+        Sheet sheet = getWorkData(parseContext).getSheet();
         Row nameRow = sheet.getRow(1);
         columnSize = (long) nameRow.getLastCellNum();
         getWorkData(parseContext).setColumnSize(columnSize);
-		return columnSize;
-	}
+        return columnSize;
+    }
 
-	protected boolean rowRead(ParseContext parseContext) {
+    protected boolean rowRead(ParseContext parseContext) {
         boolean continueOnError = getMetaData(parseContext).isContinueOnError();
-		long rowIdx = getWorkData(parseContext).getCurrentRowIdx();
-		Sheet sheet = getWorkData(parseContext).getSheet();
-		List<Object> list = getResultData(parseContext).getDataList();
-		List<Object> errorList = getResultData(parseContext).getErrorList();
-		Row row = sheet.getRow((int) rowIdx);
-		RowMapper mapper = getMetaData(parseContext).getRowMapper();
-		RowValidator validator = getMetaData(parseContext).getRowValidator();
-		Object rowItem = mapper.newRowItem(parseContext);
+        long rowIdx = getWorkData(parseContext).getCurrentRowIdx();
+        Sheet sheet = getWorkData(parseContext).getSheet();
+        List<Object> list = getResultData(parseContext).getDataList();
+        List<Object> errorList = getResultData(parseContext).getErrorList();
+        Row row = sheet.getRow((int) rowIdx);
+        RowMapper mapper = getMetaData(parseContext).getRowMapper();
+        RowValidator validator = getMetaData(parseContext).getRowValidator();
+        Object rowItem = mapper.newRowItem(parseContext);
         Object validateResult = null;
-        for(long i = 0, len = getColumnSize(parseContext); i < len; i++){
-			Cell cell = row.getCell((int) i);
-			Object value = columnRead(cell, i);
-			if(validator != null) {
+        for (long i = 0, len = getColumnSize(parseContext); i < len; i++) {
+            Cell cell = row.getCell((int) i);
+            Object value = columnRead(cell, i);
+            if (validator != null) {
                 validateResult = validator.validateColumn(parseContext, rowIdx, i, value, rowItem, validateResult);
-                if(validateResult != null) {
+                if (validateResult != null) {
                     parseContext.setResult(ParseContext.RESULT_ERROR);
-                    if(!continueOnError) {
+                    if (!continueOnError) {
                         break;
                     }
                 }
             }
             mapper.setValue(parseContext, rowIdx, i, rowItem, value);
-		}
-        if(validator != null) {
+        }
+        if (validator != null) {
             validateResult = validator.validateRow(parseContext, rowIdx, rowItem, validateResult);
             if (validateResult != null) {
                 errorList.add(validateResult);
@@ -108,11 +108,11 @@ public class PoiExcelParser extends InputStreamExcelParser {
                 }
             }
         }
-		list.add(rowItem);
-		return true;
-	}
-	
-	protected String columnRead(Cell cell, long colIdx) {
+        list.add(rowItem);
+        return true;
+    }
+
+    protected String columnRead(Cell cell, long colIdx) {
         if (cell == null) {
             return null;
         }
@@ -151,9 +151,9 @@ public class PoiExcelParser extends InputStreamExcelParser {
             }
         }
         return value;
-	}
+    }
 
-    public static class PoiExcelParserMetaData extends InputStreamExcelMetaData{
+    public static class PoiExcelParserMetaData extends InputStreamExcelMetaData {
         private int sheetIdx = 0;
 
         public int getSheetIdx() {
@@ -165,8 +165,8 @@ public class PoiExcelParser extends InputStreamExcelParser {
         }
     }
 
-	public static class PoiExcelParserWorkData extends InputStreamExcelParser.InputStreamExcelWorkData{
-	    private Sheet sheet;
+    public static class PoiExcelParserWorkData extends InputStreamExcelParser.InputStreamExcelWorkData {
+        private Sheet sheet;
 
         public Sheet getSheet() {
             return sheet;
@@ -177,14 +177,17 @@ public class PoiExcelParser extends InputStreamExcelParser {
         }
     }
 
-    public static class PoiExcelParserResultData extends InputStreamExcelResultData{
+    public static class PoiExcelParserResultData extends InputStreamExcelResultData {
 
     }
 
-    public static class PoiExcelParserContextBuilder{
+    public static class PoiExcelParserContextBuilder {
         private ParseContext parseContext = new ParseContext();
-        private PoiExcelParserContextBuilder(){}
-        public static PoiExcelParserContextBuilder build(){
+
+        private PoiExcelParserContextBuilder() {
+        }
+
+        public static PoiExcelParserContextBuilder build() {
             PoiExcelParserContextBuilder builder = new PoiExcelParserContextBuilder();
             builder.parseContext.setMetaData(new PoiExcelParserMetaData());
             builder.parseContext.setWorkData(new PoiExcelParserWorkData());
@@ -196,63 +199,63 @@ public class PoiExcelParser extends InputStreamExcelParser {
             return parseContext;
         }
 
-        public PoiExcelParserContextBuilder inputStream(InputStream in){
+        public PoiExcelParserContextBuilder inputStream(InputStream in) {
             ((PoiExcelParserWorkData) parseContext.getWorkData()).setInputStream(in);
             return this;
         }
 
-        public PoiExcelParserContextBuilder beginRow(long beginRow){
+        public PoiExcelParserContextBuilder beginRow(long beginRow) {
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setBeginRow(beginRow);
             return this;
         }
 
-        public PoiExcelParserContextBuilder maxRow(long maxRow){
+        public PoiExcelParserContextBuilder maxRow(long maxRow) {
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setMaxRow(maxRow);
             return this;
         }
 
-        public PoiExcelParserContextBuilder columnSize(long columnSize){
+        public PoiExcelParserContextBuilder columnSize(long columnSize) {
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setColumnSize(columnSize);
             return this;
         }
 
-        public PoiExcelParserContextBuilder pageSize(long pageSize){
+        public PoiExcelParserContextBuilder pageSize(long pageSize) {
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setPageSize(pageSize);
             return this;
         }
 
-        public PoiExcelParserContextBuilder beanClass(Class<?> clazz){
+        public PoiExcelParserContextBuilder beanClass(Class<?> clazz) {
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setRowMapper(new BeanRowMapper(clazz));
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setRowValidator(new BeanRowValidator(clazz));
             return this;
         }
 
-        public PoiExcelParserContextBuilder rowMapper(RowMapper rowMapper){
+        public PoiExcelParserContextBuilder rowMapper(RowMapper rowMapper) {
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setRowMapper(rowMapper);
             return this;
         }
 
-        public PoiExcelParserContextBuilder rowValidator(RowValidator rowValidator){
+        public PoiExcelParserContextBuilder rowValidator(RowValidator rowValidator) {
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setRowValidator(rowValidator);
             return this;
         }
 
-        public PoiExcelParserContextBuilder continueOnError(boolean continueOnError){
+        public PoiExcelParserContextBuilder continueOnError(boolean continueOnError) {
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setContinueOnError(continueOnError);
             return this;
         }
 
-        public PoiExcelParserContextBuilder sheetIdx(int sheetIdx){
+        public PoiExcelParserContextBuilder sheetIdx(int sheetIdx) {
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setSheetIdx(sheetIdx);
             return this;
         }
 
-        public PoiExcelParserContextBuilder eventHandler(ParseEventHandler parseEventHandler){
+        public PoiExcelParserContextBuilder eventHandler(ParseEventHandler parseEventHandler) {
             ((PoiExcelParserMetaData) parseContext.getMetaData()).addEventHandler(parseEventHandler);
             return this;
         }
 
-        public PoiExcelParserContextBuilder messageProvider(MessageProvider messageProvider){
+        public PoiExcelParserContextBuilder messageProvider(MessageProvider messageProvider) {
             ((PoiExcelParserMetaData) parseContext.getMetaData()).setMessageProvider(messageProvider);
             return this;
         }

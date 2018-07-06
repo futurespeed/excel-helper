@@ -12,41 +12,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class InputStreamExcelParser implements ExcelParser {
-	
-	public void parse(ParseContext parseContext){
-	    InputStreamExcelWorkData workData = getWorkData(parseContext);
-		InputStream in = workData.getInputStream();
-		read(parseContext, in);
-		onReady(parseContext);
-		long currPage = 1L;
+
+    public void parse(ParseContext parseContext) {
+        InputStreamExcelWorkData workData = getWorkData(parseContext);
+        InputStream in = workData.getInputStream();
+        read(parseContext, in);
+        onReady(parseContext);
+        long currPage = 1L;
         workData.setCurrentPage(currPage);
         long maxRow = getMetaData(parseContext).getMaxRow();
-		long pageSize = workData.getPageSize();
+        long pageSize = workData.getPageSize();
         long beginIdx = getMetaData(parseContext).getBeginRow();
-		long rowSize = getRowSize(parseContext);
-		if(maxRow > 0 && (rowSize - beginIdx) > maxRow){
-		    parseContext.setResult(ParseContext.RESULT_ERROR);
-		    parseContext.setResultMsg(
-		            MessageFormat.format(
-		                    parseContext.getMetaData().getMessageProvider().getProperty("excel.parse.over-max-row"), maxRow));
+        long rowSize = getRowSize(parseContext);
+        if (maxRow > 0 && (rowSize - beginIdx) > maxRow) {
+            parseContext.setResult(ParseContext.RESULT_ERROR);
+            parseContext.setResultMsg(
+                    MessageFormat.format(
+                            parseContext.getMetaData().getMessageProvider().getProperty("excel.parse.over-max-row"), maxRow));
         }
-		for(long i = beginIdx; i < rowSize; i++){
+        for (long i = beginIdx; i < rowSize; i++) {
             workData.setCurrentRowIdx(i);
-            if(!onRowRead(parseContext)){
+            if (!onRowRead(parseContext)) {
                 break;
             }
-			if(pageSize > 0 && 0 == (i - beginIdx + 1) % pageSize){
-				onPageChange(parseContext);
-				currPage++;
+            if (pageSize > 0 && 0 == (i - beginIdx + 1) % pageSize) {
+                onPageChange(parseContext);
+                currPage++;
                 workData.setCurrentPage(currPage);
-			}
-		}
-		onFinish(parseContext);
-	}
+            }
+        }
+        onFinish(parseContext);
+    }
 
-	protected void onReady(ParseContext parseContext){
-	    InputStreamExcelMetaData metaData = getMetaData(parseContext);
-        if(null == metaData.getRowMapper()){
+    protected void onReady(ParseContext parseContext) {
+        InputStreamExcelMetaData metaData = getMetaData(parseContext);
+        if (null == metaData.getRowMapper()) {
             throw new RuntimeException("please setup RowMapper");
         }
         getWorkData(parseContext).setPageSize(metaData.getPageSize());
@@ -56,49 +56,63 @@ public abstract class InputStreamExcelParser implements ExcelParser {
         getResultData(parseContext).setErrorList(errList);
         processEvent(parseContext, ParseEvent.READY);
     }
-	
-	protected void onFinish(ParseContext parseContext){
-        if(null == parseContext.getResult()){
+
+    protected void onFinish(ParseContext parseContext) {
+        if (null == parseContext.getResult()) {
             parseContext.setResult(ParseContext.RESULT_SUCCESS);
         }
-	    processEvent(parseContext, ParseEvent.FINISH);
-    }
-	
-	protected void onPageChange(ParseContext parseContext){
-	    processEvent(parseContext, ParseEvent.PAGE_CHANGE);
-    }
-	
-	protected boolean onRowRead(ParseContext parseContext){
-	    boolean result = rowRead(parseContext);
-        processEvent(parseContext, ParseEvent.ROW_READ);
-	    return result;
+        processEvent(parseContext, ParseEvent.FINISH);
     }
 
-    protected void processEvent(ParseContext parseContext, ParseEvent parseEvent){
+    protected void onPageChange(ParseContext parseContext) {
+        processEvent(parseContext, ParseEvent.PAGE_CHANGE);
+    }
+
+    protected boolean onRowRead(ParseContext parseContext) {
+        boolean result = rowRead(parseContext);
+        processEvent(parseContext, ParseEvent.ROW_READ);
+        return result;
+    }
+
+    protected void processEvent(ParseContext parseContext, ParseEvent parseEvent) {
         List<ParseEventHandler> eventHandlers = getMetaData(parseContext).getEventHandlers();
-        if(null == eventHandlers || eventHandlers.isEmpty()){
+        if (null == eventHandlers || eventHandlers.isEmpty()) {
             return;
         }
-        for(ParseEventHandler eventHandler : eventHandlers){
-            switch(parseEvent) {
-                case READY: {eventHandler.onReady(parseContext); break;}
-                case ROW_READ: {eventHandler.onRowRead(parseContext); break;}
-                case PAGE_CHANGE: {eventHandler.onPageChange(parseContext); break;}
-                case FINISH: {eventHandler.onFinish(parseContext); break;}
-                default: {break;}
+        for (ParseEventHandler eventHandler : eventHandlers) {
+            switch (parseEvent) {
+                case READY: {
+                    eventHandler.onReady(parseContext);
+                    break;
+                }
+                case ROW_READ: {
+                    eventHandler.onRowRead(parseContext);
+                    break;
+                }
+                case PAGE_CHANGE: {
+                    eventHandler.onPageChange(parseContext);
+                    break;
+                }
+                case FINISH: {
+                    eventHandler.onFinish(parseContext);
+                    break;
+                }
+                default: {
+                    break;
+                }
             }
         }
     }
 
-    private InputStreamExcelMetaData getMetaData(ParseContext parseContext){
+    private InputStreamExcelMetaData getMetaData(ParseContext parseContext) {
         return (InputStreamExcelMetaData) parseContext.getMetaData();
     }
 
-    private InputStreamExcelWorkData getWorkData(ParseContext parseContext){
+    private InputStreamExcelWorkData getWorkData(ParseContext parseContext) {
         return (InputStreamExcelWorkData) parseContext.getWorkData();
     }
 
-    private InputStreamExcelResultData getResultData(ParseContext parseContext){
+    private InputStreamExcelResultData getResultData(ParseContext parseContext) {
         return (InputStreamExcelResultData) parseContext.getResultData();
     }
 
@@ -108,9 +122,9 @@ public abstract class InputStreamExcelParser implements ExcelParser {
 
     protected abstract boolean rowRead(ParseContext parseContext);
 
-	public static class InputStreamExcelMetaData implements ParseContext.MetaData {
-	    private long beginRow = 1;
-	    private long maxRow = -1;
+    public static class InputStreamExcelMetaData implements ParseContext.MetaData {
+        private long beginRow = 1;
+        private long maxRow = -1;
         private boolean continueOnError = false;
         private long columnSize = -1;
         private long pageSize = -1;
@@ -175,11 +189,11 @@ public abstract class InputStreamExcelParser implements ExcelParser {
             this.rowValidator = rowValidator;
         }
 
-        public void addEventHandler(ParseEventHandler parseEventHandler){
+        public void addEventHandler(ParseEventHandler parseEventHandler) {
             eventHandlers.add(parseEventHandler);
         }
 
-        public void removeEventHandler(ParseEventHandler parseEventHandler){
+        public void removeEventHandler(ParseEventHandler parseEventHandler) {
             eventHandlers.remove(parseEventHandler);
         }
 
@@ -196,11 +210,11 @@ public abstract class InputStreamExcelParser implements ExcelParser {
         }
     }
 
-	public static class InputStreamExcelWorkData implements ParseContext.WorkData {
-	    private InputStream inputStream;
-	    private long pageSize;
-	    private long currentPage;
-	    private long currentRowIdx;
+    public static class InputStreamExcelWorkData implements ParseContext.WorkData {
+        private InputStream inputStream;
+        private long pageSize;
+        private long currentPage;
+        private long currentRowIdx;
         private long rowSize;
         private long columnSize;
 
@@ -253,7 +267,7 @@ public abstract class InputStreamExcelParser implements ExcelParser {
         }
     }
 
-    public static class InputStreamExcelResultData implements ParseContext.ResultData{
+    public static class InputStreamExcelResultData implements ParseContext.ResultData {
         private List<Object> errorList;
         private List<Object> dataList;
 

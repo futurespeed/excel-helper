@@ -21,7 +21,7 @@ public class BeanRowValidator<T> implements RowValidator<T, RowErrorInfo> {
 
     private Map<String, String> fieldNameMap;
 
-    public BeanRowValidator(Class<T> clazz){
+    public BeanRowValidator(Class<T> clazz) {
         this.clazz = clazz;
         columnMap = new HashMap<String, Field>();
         fieldNameMap = new HashMap<String, String>();
@@ -29,13 +29,13 @@ public class BeanRowValidator<T> implements RowValidator<T, RowErrorInfo> {
         List<Field> fieldList = new ArrayList<Field>();
         fieldList.addAll(Arrays.asList(clazz.getDeclaredFields()));
         Class<?> superClass = clazz;
-        while((superClass = superClass.getSuperclass()) != Object.class){
+        while ((superClass = superClass.getSuperclass()) != Object.class) {
             fieldList.addAll(Arrays.asList(superClass.getDeclaredFields()));
         }
         Collections.reverse(fieldList);
-        for(Field field: fieldList){
+        for (Field field : fieldList) {
             ExcelColumn excelColumn = field.getAnnotation(ExcelColumn.class);
-            if(null == excelColumn){
+            if (null == excelColumn) {
                 continue;
             }
             columnMap.put(String.valueOf(excelColumn.seq() - 1), field);
@@ -60,7 +60,7 @@ public class BeanRowValidator<T> implements RowValidator<T, RowErrorInfo> {
         for (ConstraintViolation<T> cv : set) {
             property = cv.getPropertyPath().toString();
             String msg = cv.getMessage();
-            if(cv.getMessageTemplate().startsWith("{")){
+            if (cv.getMessageTemplate().startsWith("{")) {
                 msg = MessageFormat.format(parseContext.getMetaData().getMessageProvider().getProperty("excel.parse.validate.bean.default-error"), fieldNameMap.get(property));
             }
             if (rowErrorInfo.getMsg() != null) {
