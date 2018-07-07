@@ -14,11 +14,11 @@ import java.util.List;
 
 public class PoiExcelWriter extends OutputStreamExcelWriter {
 
-    public PoiExcelWriterContextBuilder builder(){
+    public PoiExcelWriterContextBuilder builder() {
         return PoiExcelWriterContextBuilder.build();
     }
 
-    private PoiExcelWriterWorkData getWorkData(WriteContext writeContext){
+    private PoiExcelWriterWorkData getWorkData(WriteContext writeContext) {
         return (PoiExcelWriterWorkData) writeContext.getWorkData();
     }
 
@@ -35,7 +35,7 @@ public class PoiExcelWriter extends OutputStreamExcelWriter {
                 sheet.setColumnWidth(columnIndex, width * 256);
             }
             long rowIndex = 0;
-            if(getWorkData(writeContext).isWriteHeader()){
+            if (getWorkData(writeContext).isWriteHeader()) {
                 writeHeader(writeContext, wb, sheet);
                 rowIndex++;
             }
@@ -51,7 +51,7 @@ public class PoiExcelWriter extends OutputStreamExcelWriter {
             OutputStream out = getWorkData(writeContext).getOutputStream();
             wb.write(out);
             out.flush();
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -69,7 +69,7 @@ public class PoiExcelWriter extends OutputStreamExcelWriter {
         }
     }
 
-    private void writeHeader(WriteContext writeContext, Workbook wb, Sheet sheet){
+    private void writeHeader(WriteContext writeContext, Workbook wb, Sheet sheet) {
         RowMapper rowMapper = getWorkData(writeContext).getRowMapper();
         List<String> columnList = rowMapper.getColumnList();
         Row row = sheet.createRow(0);
@@ -99,18 +99,19 @@ public class PoiExcelWriter extends OutputStreamExcelWriter {
     public static class PoiExcelWriterWorkData extends OutputStreamExcelWriter.OutputStreamExcelWriterWorkData {
     }
 
-    public static class PoiExcelWriterContextBuilder{
+    public static class PoiExcelWriterContextBuilder {
         private WriteContext writeContext = new WriteContext();
 
-        private PoiExcelWriterContextBuilder(){}
+        private PoiExcelWriterContextBuilder() {
+        }
 
-        public static PoiExcelWriterContextBuilder build(){
+        public static PoiExcelWriterContextBuilder build() {
             PoiExcelWriterContextBuilder builder = new PoiExcelWriterContextBuilder();
             builder.writeContext.setWorkData(new PoiExcelWriterWorkData());
             return builder;
         }
 
-        public PoiExcelWriterContextBuilder outputStream(OutputStream outputStream){
+        public PoiExcelWriterContextBuilder outputStream(OutputStream outputStream) {
             ((PoiExcelWriterWorkData) writeContext.getWorkData()).setOutputStream(outputStream);
             return this;
         }
@@ -120,17 +121,17 @@ public class PoiExcelWriter extends OutputStreamExcelWriter {
             return this;
         }
 
-        public PoiExcelWriterContextBuilder rowMapper(RowMapper rowMapper){
+        public PoiExcelWriterContextBuilder rowMapper(RowMapper rowMapper) {
             ((PoiExcelWriterWorkData) writeContext.getWorkData()).setRowMapper(rowMapper);
             return this;
         }
 
-        public PoiExcelWriterContextBuilder writeHeader(boolean writeHeader){
+        public PoiExcelWriterContextBuilder writeHeader(boolean writeHeader) {
             ((PoiExcelWriterWorkData) writeContext.getWorkData()).setWriteHeader(writeHeader);
             return this;
         }
 
-        public PoiExcelWriterContextBuilder dataList(List dataList){
+        public PoiExcelWriterContextBuilder dataList(List dataList) {
             ((PoiExcelWriterWorkData) writeContext.getWorkData()).setDataList(dataList);
             return this;
         }

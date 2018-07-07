@@ -12,9 +12,9 @@ import java.util.*;
 
 public class TestExcelWriter {
     @Test
-    public void testWrite() throws Exception{
+    public void testWrite() throws Exception {
         List<TestBean2> list = new ArrayList<TestBean2>();
-        for(int i = 0; i < 100; i++){
+        for (int i = 0; i < 100; i++) {
             TestBean2 bean = new TestBean2();
             bean.setCol1(i + "");
             bean.setCol2(UUID.randomUUID().toString());
@@ -23,7 +23,7 @@ public class TestExcelWriter {
         }
 
         List<Map> list2 = new ArrayList<Map>();
-        for(int i = 0; i < 100; i++){
+        for (int i = 0; i < 100; i++) {
             Map map = new HashMap();
             map.put("col1", i + "");
             map.put("col2", UUID.randomUUID().toString());
@@ -40,7 +40,7 @@ public class TestExcelWriter {
                     .dataList(list2)
                     .getWriteContext();
             writer.write(context);
-        }finally {
+        } finally {
             IOUtils.closeQuietly(out);
         }
     }

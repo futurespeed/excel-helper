@@ -53,7 +53,7 @@ public class BeanRowMapper<T> implements RowMapper<T> {
     @Override
     public String getColumnName(WriteContext writeContext, long column) {
         ExcelColumn excelColumn = columnAnnoMap.get(String.valueOf(column));
-        if(excelColumn != null){
+        if (excelColumn != null) {
             return excelColumn.name();
         }
         return null;
@@ -62,7 +62,7 @@ public class BeanRowMapper<T> implements RowMapper<T> {
     @Override
     public int getColumnWidth(WriteContext writeContext, long column) {
         ExcelColumn excelColumn = columnAnnoMap.get(String.valueOf(column));
-        if(excelColumn != null){
+        if (excelColumn != null) {
             return excelColumn.width();
         }
         return 30;
@@ -76,7 +76,7 @@ public class BeanRowMapper<T> implements RowMapper<T> {
                 return null;
             }
             return PropertyUtils.getProperty(t, property);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
