@@ -97,7 +97,6 @@ public class PoiExcelWriter extends OutputStreamExcelWriter {
     }
 
     public static class PoiExcelWriterWorkData extends OutputStreamExcelWriter.OutputStreamExcelWriterWorkData {
-        private boolean writeTitle;
     }
 
     public static class PoiExcelWriterContextBuilder{
