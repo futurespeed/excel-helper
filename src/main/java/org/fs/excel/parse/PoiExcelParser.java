@@ -77,7 +77,7 @@ public class PoiExcelParser extends InputStreamExcelParser {
         Row row = sheet.getRow((int) rowIdx);
         RowMapper mapper = getMetaData(parseContext).getRowMapper();
         RowValidator validator = getMetaData(parseContext).getRowValidator();
-        Object rowItem = mapper.newRowItem(parseContext);
+        Object rowItem = mapper.newRowItem(parseContext, rowIdx);
         Object validateResult = null;
         for (long i = 0, len = getColumnSize(parseContext); i < len; i++) {
             Cell cell = row.getCell((int) i);
@@ -220,8 +220,11 @@ public class PoiExcelParser extends InputStreamExcelParser {
         }
 
         public PoiExcelParserContextBuilder beanClass(Class<?> clazz) {
-            ((PoiExcelParserMetaData) parseContext.getMetaData()).setRowMapper(new BeanRowMapper(clazz));
-            ((PoiExcelParserMetaData) parseContext.getMetaData()).setRowValidator(new BeanRowValidator(clazz));
+            PoiExcelParserMetaData metaData = ((PoiExcelParserMetaData) parseContext.getMetaData());
+            BeanRowMapper rowMapper = new BeanRowMapper(clazz);
+            metaData.setRowMapper(rowMapper);
+            metaData.setColumnSize(rowMapper.getColumnSize(parseContext));
+            metaData.setRowValidator(new BeanRowValidator(clazz));
             return this;
         }
 

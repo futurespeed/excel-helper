@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import java.io.FileInputStream;
 import java.io.InputStream;
 
 public class TestExcelParser {
@@ -16,7 +15,7 @@ public class TestExcelParser {
         PoiExcelParser parser = new PoiExcelParser();
         InputStream in = null;
         try {
-            in = new FileInputStream("D:/data/require/营销平台二期优化功能清单-20170705.xlsx");
+            in = TestExcelParser.class.getResourceAsStream("/demo.xlsx");
             ParseContext parseContext = parser.builder()
                     .inputStream(in)
                     .beanClass(TestBean1.class)
@@ -50,6 +49,12 @@ public class TestExcelParser {
     }
 
     public static class TestBean1 {
+        @ExcelColumn.SeqField
+        private long seq;
+
+        @ExcelColumn.SeqField(begin = 0)
+        private int seq2;
+
         @NotNull
         @Pattern(regexp = "^[\\d]{1,32}$")
         @ExcelColumn(seq = 1, name = "c1")
@@ -65,6 +70,22 @@ public class TestExcelParser {
 //        @Spel("@bean1.check(#root)")
         @ExcelColumn(seq = 3, name = "c3")
         private String col3;
+
+        public long getSeq() {
+            return seq;
+        }
+
+        public void setSeq(long seq) {
+            this.seq = seq;
+        }
+
+        public int getSeq2() {
+            return seq2;
+        }
+
+        public void setSeq2(int seq2) {
+            this.seq2 = seq2;
+        }
 
         public String getCol1() {
             return col1;

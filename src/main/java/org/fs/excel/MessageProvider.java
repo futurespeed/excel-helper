@@ -7,7 +7,7 @@ public class MessageProvider {
 
     public MessageProvider(String path) {
         if (null == path) {
-            path = "/org/fs/excel/message.properties";
+            path = "message.properties";
         }
         try {
             properties = new Properties();

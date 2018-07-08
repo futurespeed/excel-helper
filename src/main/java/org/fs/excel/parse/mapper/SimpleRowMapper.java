@@ -7,7 +7,12 @@ import java.util.Map;
 
 public class SimpleRowMapper implements RowMapper<Map> {
     @Override
-    public Map newRowItem(ParseContext parseContext) {
+    public long getColumnSize(ParseContext parseContext) {
+        return -1;
+    }
+
+    @Override
+    public Map newRowItem(ParseContext parseContext, long rowIdx) {
         return new HashMap<String, Object>();
     }
 

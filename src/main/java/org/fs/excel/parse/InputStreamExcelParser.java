@@ -23,7 +23,7 @@ public abstract class InputStreamExcelParser implements ExcelParser {
         workData.setCurrentPage(currPage);
         long maxRow = getMetaData(parseContext).getMaxRow();
         long pageSize = workData.getPageSize();
-        long beginIdx = getMetaData(parseContext).getBeginRow();
+        long beginIdx = getMetaData(parseContext).getBeginRow() - 1;
         long rowSize = getRowSize(parseContext);
         if (maxRow > 0 && (rowSize - beginIdx) > maxRow) {
             parseContext.setResult(ParseContext.RESULT_ERROR);
@@ -124,7 +124,7 @@ public abstract class InputStreamExcelParser implements ExcelParser {
     protected abstract boolean rowRead(ParseContext parseContext);
 
     public static class InputStreamExcelMetaData implements ParseContext.MetaData {
-        private long beginRow = 1;
+        private long beginRow = 2;
         private long maxRow = -1;
         private boolean continueOnError = false;
         private long columnSize = -1;

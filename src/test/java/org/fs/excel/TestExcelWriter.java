@@ -32,7 +32,7 @@ public class TestExcelWriter {
         }
 
         PoiExcelWriter writer = new PoiExcelWriter();
-        OutputStream out = new FileOutputStream(new File("d:/temp/1.xlsx"));
+        OutputStream out = new FileOutputStream(new File("/temp/1.xlsx"));
         try {
             WriteContext context = writer.builder()
                     .beanClass(TestBean2.class)
