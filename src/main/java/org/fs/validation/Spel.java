@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 public @interface Spel {
     String value();
 
-    String message() default "{javax.validation.constraints.Spel.message}";
+    String message() default "{org.fs.validation.Spel.message}";
 
     Class<?>[] groups() default {};
 
