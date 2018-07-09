@@ -10,7 +10,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-public class SpelConstraintValidator implements ConstraintValidator<Spel, String> {
+public class SpelConstraintValidator implements ConstraintValidator<Spel, Object> {
 
     private static ExpressionParser parser = new SpelExpressionParser();
 
@@ -22,7 +22,7 @@ public class SpelConstraintValidator implements ConstraintValidator<Spel, String
     }
 
     @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
+    public boolean isValid(Object value, ConstraintValidatorContext context) {
         StandardEvaluationContext ec = new StandardEvaluationContext(value);
         ApplicationContext applicationContext = null;//TODO SpringContextHolder.getApplicationContext()
         ec.setBeanResolver(new BeanFactoryResolver(applicationContext));
