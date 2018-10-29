@@ -47,13 +47,13 @@ public class TestExcelWriter {
 
     public static class TestBean2 {
 
-        @ExcelColumn(seq = 1, name = "c1", width = 10)
+        @ExcelExportColumn(seq = 1, name = "c1", width = 10)
         private String col1;
 
-        @ExcelColumn(seq = 2, name = "c2", width = 50)
+        @ExcelExportColumn(seq = 2, name = "c2", width = 50)
         private String col2;
 
-        @ExcelColumn(seq = 3, name = "c3")
+        @ExcelExportColumn(seq = 3, name = "c3")
         private String col3;
 
         public String getCol1() {
