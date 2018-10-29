@@ -1,7 +1,7 @@
 package org.fs.excel.writer.mapper;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.fs.excel.ExcelColumn;
+import org.fs.excel.ExcelExportColumn;
 import org.fs.excel.writer.WriteContext;
 
 import java.lang.reflect.Field;
@@ -15,13 +15,13 @@ public class BeanRowMapper<T> implements RowMapper<T> {
 
     private List<String> columnList;
 
-    private Map<String, ExcelColumn> columnAnnoMap;
+    private Map<String, ExcelExportColumn> columnAnnoMap;
 
     public BeanRowMapper(Class<T> clazz) {
         this.clazz = clazz;
         columnMap = new HashMap<String, String>();
         columnList = new ArrayList<String>();
-        columnAnnoMap = new HashMap<String, ExcelColumn>();
+        columnAnnoMap = new HashMap<String, ExcelExportColumn>();
 
         List<Field> fieldList = new ArrayList<Field>();
         fieldList.addAll(Arrays.asList(clazz.getDeclaredFields()));
@@ -31,7 +31,7 @@ public class BeanRowMapper<T> implements RowMapper<T> {
         }
         Collections.reverse(fieldList);
         for (Field field : fieldList) {
-            ExcelColumn excelColumn = field.getAnnotation(ExcelColumn.class);
+            ExcelExportColumn excelColumn = field.getAnnotation(ExcelExportColumn.class);
             if (null == excelColumn) {
                 continue;
             }
@@ -52,7 +52,7 @@ public class BeanRowMapper<T> implements RowMapper<T> {
 
     @Override
     public String getColumnName(WriteContext writeContext, long column) {
-        ExcelColumn excelColumn = columnAnnoMap.get(String.valueOf(column));
+        ExcelExportColumn excelColumn = columnAnnoMap.get(String.valueOf(column));
         if (excelColumn != null) {
             return excelColumn.name();
         }
@@ -61,7 +61,7 @@ public class BeanRowMapper<T> implements RowMapper<T> {
 
     @Override
     public int getColumnWidth(WriteContext writeContext, long column) {
-        ExcelColumn excelColumn = columnAnnoMap.get(String.valueOf(column));
+        ExcelExportColumn excelColumn = columnAnnoMap.get(String.valueOf(column));
         if (excelColumn != null) {
             return excelColumn.width();
         }

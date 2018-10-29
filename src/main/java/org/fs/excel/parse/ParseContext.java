@@ -8,8 +8,10 @@ public class ParseContext {
 
     public static final String RESULT_SUCCESS = "success";
     public static final String RESULT_ERROR = "error";
+    public static final String ERROR_CODE_OVER_MAX_ROW = "excel.parse.over-max-row";
 
     private String result;
+    private String resultCode;
     private String resultMsg;
     private MetaData metaData;
     private WorkData workData;
@@ -21,6 +23,14 @@ public class ParseContext {
 
     public void setResult(String result) {
         this.result = result;
+    }
+
+    public String getResultCode() {
+        return resultCode;
+    }
+
+    public void setResultCode(String resultCode) {
+        this.resultCode = resultCode;
     }
 
     public String getResultMsg() {

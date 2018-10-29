@@ -6,11 +6,10 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ExcelColumn {
+
     long seq();
 
     String name();
-
-    int width() default 30;
 
     @Target({ElementType.FIELD})
     @Retention(RetentionPolicy.RUNTIME)
@@ -19,3 +18,4 @@ public @interface ExcelColumn {
         long begin() default 1;
     }
 }
+

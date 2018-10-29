@@ -1,5 +1,6 @@
 package org.fs.excel.parse;
 
+
 import org.fs.excel.MessageProvider;
 import org.fs.excel.parse.event.ParseEvent;
 import org.fs.excel.parse.event.ParseEventHandler;
@@ -27,19 +28,21 @@ public abstract class InputStreamExcelParser implements ExcelParser {
         long rowSize = getRowSize(parseContext);
         if (maxRow > 0 && (rowSize - beginIdx) > maxRow) {
             parseContext.setResult(ParseContext.RESULT_ERROR);
+            parseContext.setResultCode(ParseContext.ERROR_CODE_OVER_MAX_ROW);
             parseContext.setResultMsg(
                     MessageFormat.format(
-                            parseContext.getMetaData().getMessageProvider().getProperty("excel.parse.over-max-row"), maxRow));
-        }
-        for (long i = beginIdx; i < rowSize; i++) {
-            workData.setCurrentRowIdx(i);
-            if (!onRowRead(parseContext)) {
-                break;
-            }
-            if (pageSize > 0 && 0 == (i - beginIdx + 1) % pageSize) {
-                onPageChange(parseContext);
-                currPage++;
-                workData.setCurrentPage(currPage);
+                            parseContext.getMetaData().getMessageProvider().getProperty(ParseContext.ERROR_CODE_OVER_MAX_ROW), maxRow));
+        } else {
+            for (long i = beginIdx; i < rowSize; i++) {
+                workData.setCurrentRowIdx(i);
+                if (!onRowRead(parseContext)) {
+                    break;
+                }
+                if (pageSize > 0 && 0 == (i - beginIdx + 1) % pageSize) {
+                    onPageChange(parseContext);
+                    currPage++;
+                    workData.setCurrentPage(currPage);
+                }
             }
         }
         onFinish(parseContext);
