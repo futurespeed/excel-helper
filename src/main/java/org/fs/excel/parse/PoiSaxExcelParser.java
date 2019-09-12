@@ -3,6 +3,7 @@ package org.fs.excel.parse;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
@@ -16,7 +17,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.InputStream;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -45,7 +45,7 @@ public class PoiSaxExcelParser extends PoiExcelParser {
             }
             parser.parse(new InputSource(sheetInputStream));
         } catch (ParseException e) {
-            // do nothing
+            // interrupt parse
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         } finally {
@@ -65,7 +65,6 @@ public class PoiSaxExcelParser extends PoiExcelParser {
         private ParseContext parseContext;
 
         private int rowIdx;
-        private int colIdx;
         private List<String> dataList;
 
         private long pageSize;
@@ -97,7 +96,6 @@ public class PoiSaxExcelParser extends PoiExcelParser {
                 throw new ParseException(ParseContext.ERROR_CODE_OVER_MAX_ROW);
             }
             rowIdx = i;
-            colIdx = -1;
             dataList = new ArrayList<>();
         }
 
@@ -124,9 +122,9 @@ public class PoiSaxExcelParser extends PoiExcelParser {
             if (validator != null) {
                 validateResult = validator.validateRow(parseContext, rowIdx, rowItem, validateResult);
                 if (validateResult != null) {
+                    parseContext.setResult(ParseContext.RESULT_ERROR);
                     errorList.add(validateResult);
                     if (!continueOnError) {
-                        parseContext.setResult(ParseContext.RESULT_ERROR);
                         throw new ParseException(ParseContext.RESULT_ERROR);
                     }
                 }
@@ -134,17 +132,19 @@ public class PoiSaxExcelParser extends PoiExcelParser {
             getResultData(parseContext).getDataList().add(rowItem);
             onRowRead(parseContext);
 
-            long currRowIdx = i - beginRowIdx;
             getWorkData(parseContext).setCurrentRowIdx(i);
             if (pageSize > 0 && 0 == (i - beginRowIdx + 1) % pageSize) {
-                getWorkData(parseContext).setCurrentPage(currRowIdx / pageSize);
+                getWorkData(parseContext).setCurrentPage((i - beginRowIdx) / pageSize);
                 onPageChange(parseContext);
             }
         }
 
         @Override
         public void cell(String cellReference, String formattedValue, XSSFComment comment) {
-            colIdx++;
+            int colIdx = CellReference.convertColStringToIndex(cellReference.replaceAll("\\d", ""));
+            for (int i = dataList.size(); i < colIdx; i++) {
+                dataList.add(null);
+            }
             dataList.add(formattedValue);
         }
 
