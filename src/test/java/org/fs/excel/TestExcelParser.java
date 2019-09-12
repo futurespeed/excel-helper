@@ -3,16 +3,19 @@ package org.fs.excel;
 import org.apache.commons.io.IOUtils;
 import org.fs.excel.parse.ParseContext;
 import org.fs.excel.parse.PoiExcelParser;
+import org.fs.excel.parse.PoiSaxExcelParser;
+import org.fs.excel.parse.event.ParseEventAdapter;
 import org.junit.Test;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.io.InputStream;
+import java.util.List;
 
 public class TestExcelParser {
     @Test
     public void testParse() throws Throwable {
-        PoiExcelParser parser = new PoiExcelParser();
+        PoiExcelParser parser = new PoiSaxExcelParser();
         InputStream in = null;
         try {
             in = TestExcelParser.class.getResourceAsStream("/demo.xlsx");
@@ -20,29 +23,29 @@ public class TestExcelParser {
                     .inputStream(in)
                     .beanClass(TestBean1.class)
                     .continueOnError(true)
-                    .beginRow(2)
+                    .beginRow(3)
                     .maxRow(5000)
-//                    .pageSize(10)
-//                    .eventHandler(new ParseEventAdapter() {
-//                        @Override
-//                        public void onPageChange(ParseContext context) {
-//                            System.out.print("page-" + ((PoiExcelParser.PoiExcelParserWorkData) context.getWorkData()).getCurrentPage() + ": ");
-//                            List list = context.getResultData().getDataList();
-//                            System.out.println(list);
-//                            list.clear();
-//                        }
-//
-//                        @Override
-//                        public void onFinish(ParseContext context) {
-//                            List list = context.getResultData().getDataList();
-//                            System.out.println("finish: " + list);
-//                            list.clear();
-//                        }
-//                    })
+                    .pageSize(10)
+                    .eventHandler(new ParseEventAdapter() {
+                        @Override
+                        public void onPageChange(ParseContext context) {
+                            System.out.print("page-" + ((PoiExcelParser.PoiExcelParserWorkData) context.getWorkData()).getCurrentPage() + ": ");
+                            List list = context.getResultData().getDataList();
+                            System.out.println(list);
+                            list.clear();
+                        }
+
+                        @Override
+                        public void onFinish(ParseContext context) {
+                            List list = context.getResultData().getDataList();
+                            System.out.println("finish: " + list);
+                            list.clear();
+                        }
+                    })
                     .getParseContext();
             parser.parse(parseContext);
-            System.out.println(parseContext.getResultData().getDataList());
-            System.out.println(parseContext.getResultData().getErrorList());
+            System.out.println(parseContext.getResultData().getDataList().size());
+            System.out.println(parseContext.getResultData().getErrorList().size());
         } finally {
             IOUtils.closeQuietly(in);
         }
