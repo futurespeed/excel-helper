@@ -26,7 +26,6 @@ public class PoiSaxExcelParser extends PoiExcelParser {
     @Override
     public void parse(ParseContext parseContext) {
         OPCPackage pkg = null;
-        InputStream sheetInputStream = null;
         try {
             onReady(parseContext);
 
@@ -40,6 +39,7 @@ public class PoiSaxExcelParser extends PoiExcelParser {
             parser.setContentHandler(handler);
             Iterator<InputStream> ite = r.getSheetsData();
             int sheetIdx = getMetaData(parseContext).getSheetIdx();
+            InputStream sheetInputStream = null;
             for (int i = -1; i < sheetIdx; i++) {
                 sheetInputStream = ite.next();
             }
@@ -49,7 +49,6 @@ public class PoiSaxExcelParser extends PoiExcelParser {
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         } finally {
-            IOUtils.closeQuietly(sheetInputStream);
             IOUtils.closeQuietly(pkg);
             onFinish(parseContext);
         }
