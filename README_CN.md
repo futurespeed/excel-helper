@@ -11,12 +11,16 @@
 - 支持起始行号、最大行数、sheet页等设置
 - 支持国际化
 
+#### 基本结构
+![excel-parser](excel-parser.png)
+
 例子：
 ```java
 public class TestExcelParser {
     @Test
     public void testParse() throws Throwable {
         PoiExcelParser parser = new PoiExcelParser();
+        // PoiExcelParser parser = new PoiSaxExcelParser(); // 超过5万行数据使用该解析器
         InputStream in = null;
         try {
             in = TestExcelParser.class.getResourceAsStream("/demo.xlsx");
