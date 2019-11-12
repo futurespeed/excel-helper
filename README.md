@@ -20,7 +20,7 @@ public class TestExcelParser {
     @Test
     public void testParse() throws Throwable {
         PoiExcelParser parser = new PoiExcelParser();
-        // PoiExcelParser parser = new PoiSaxExcelParser(); // use this Parser while rows over 5W
+        // PoiExcelParser parser = new PoiSaxExcelParser(); // use this Parser while rows over 50,000
         InputStream in = null;
         try {
             in = TestExcelParser.class.getResourceAsStream("/demo.xlsx");
